@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #__nuxt{
+  height: 100%;
+}
+#__nuxt{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#app{
+  width: 20rem;
+  height: 6.75rem ;
+}
