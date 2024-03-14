@@ -7,6 +7,9 @@
 dist
 nuxt3-app
 
+# 不用上传
+*.html 
+
 # Node dependencies
 node_modules
 
