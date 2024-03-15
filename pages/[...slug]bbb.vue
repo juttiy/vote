@@ -6,17 +6,15 @@ const path: string = route.path
 const emojis = ['😌' ,'😣', '😞', '😊', '😆', '😀'];
 const ranks = [1 ,2, 3, 4, 5];
 const LOCAL_KEY = 'voted'
-const time = new Date().getTime()
+
 
 const rank = ref<number>(0)
 const emojiWrapper = ref<HTMLDivElement>()
-const message = ref<string>('')
-const oldVote = ref<number>(0)
-// const voteData = ref<voteType>()
-// const pending = ref<any>()
-
-  // const data= await $fetch('/api/vote?' + time, {
-  const { data:voteData, pending } = await useFetch('/api/vote?', {
+const voteData = ref<voteType>(createNewData())
+const pending = ref<any>()
+async function getData() {
+  await nextTick()
+  const { data, pending: pendingInner } = await useFetch('../api/vote', {
     query: {
       uid: path
     },
@@ -25,22 +23,21 @@ const oldVote = ref<number>(0)
       return createNewData()
     }
   },)
-  // console.log(voteData)
-  // voteData.value = data
-  // pending.value = pendingInner
-
-
+  voteData.value = data.value
+  pending.value = pendingInner
+}
+// const { voteData, pending } = getData()
 const emojiScrollTop = computed(() => { 
   return {
     // transform: `translate(0, -${(rank.value - 1) * 100}%)`
     marginTop: `-${rank.value * 100}%`
   }
 })
-const totalVote = computed(() => {
-  // await nextTick()
+const totalVote = computed(async() => {
+  await nextTick()
   console.log(voteData)
+  console.log(typeof voteData)
   console.log(voteData.value)
-  // debugger
   const voteKeys = Object.keys(voteData.value)
   let total = 0
   let rankTotal = 0
@@ -48,16 +45,12 @@ const totalVote = computed(() => {
     total += Number(voteData.value[key])
     rankTotal += Number(voteData.value[key]) * (index + 1) * 2
   })
-  console.log(total, rankTotal)
-  return {
-    total,
-    rankPer: (rankTotal / total) || 0
-  }
+  return `rank/total: ${ (rankTotal / total) || 0 }/${total}`
+  return '1'
 })
 onMounted(()=> {
-  const voted = localStorage.getItem(LOCAL_KEY + path) || 0
+  const voted = localStorage.getItem(LOCAL_KEY) || 0
   rank.value = voted as number
-  oldVote.value = voted as number
   voted && onChange(void(0))
 })
 
@@ -73,16 +66,12 @@ function onChange (event: any): void{
 
 async function setVote() {
   const vote =  `r${rank.value}`
-  const old = oldVote.value ? `r${oldVote.value}` : 0
   try {
     const data = await $fetch('/api/vote',{
     method: 'POST',
     body: {
       uid: path,
-      vote: {
-        vote,
-        old
-      }
+      vote
     }
     
   })
@@ -90,8 +79,7 @@ async function setVote() {
   } catch (error) {
     
   }
-  localStorage.setItem(LOCAL_KEY + path, String(rank.value))
-  oldVote.value = rank.value
+  localStorage.setItem(LOCAL_KEY, String(rank.value))
 }
 </script>
 <template>
@@ -123,9 +111,6 @@ async function setVote() {
         :value="(6 - item)"
       />
     </div>
-    <div class="col-span-2 text-center">Rank:{{ totalVote.rankPer.toFixed(2) }}/10&nbsp;({{ totalVote.total }})</div>
-    <div class="col-span-2 alert alert-error" v-if="message">
-      <span>{{ message }}</span>
-    </div>
+    <div class="col-span-2 text-center">{{ totalVote }} </div>
   </div>
-</template>
+</template>Request
