@@ -24,7 +24,7 @@ export default defineEventHandler(async function(event: H3Event): Promise<unknow
 
   oldData[body?.vote.vote] = Number(oldData[body?.vote.vote]) + 1
   if(body?.vote.old) {
-    oldData[body?.vote.old] = Number(oldData[body?.vote.old]) - 1
+    oldData[body?.vote.old] = Number(oldData[body?.vote.old]) - 1 || 0
   }
   data = JSON.stringify(oldData)
   await redis.set(redisKey, data)
